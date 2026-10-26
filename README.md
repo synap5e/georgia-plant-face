@@ -8,6 +8,37 @@ snapshotted, reverse-engineered for its pin map, calibration and face
 bitmaps, and then replaced on 2026-10-23 with a MicroPython port that works
 with the sensor and shield actually on hand.
 
+## Faces
+
+The display as seen on the matrix, with `██` for lit LEDs and `·` for unlit
+ones:
+
+```
+thirsty           neutral           happy             soggy             watered
+· · · · · · · ·   · · · · · · · ·   · · · · · · · ·   · · · · · · · ·   · · · ████· · · 
+· ████· · ████·   · ████· · ████·   · ████· · ████·   · ████· · ████·   · · · ████· · · 
+· ████· · ████·   · ████· · ████·   · ████· · ████·   · ████· · ████·   · · ████████· · 
+· · · · · · · ·   · · · · · · · ·   · · · · · · · ·   · · · · · · · ·   · ████████████· 
+· · ████████· ·   · · · · · · · ·   ██· · · · · · ██  · · · · · · · ·   · ████████████· 
+· ██· · · · ██·   · · ████████· ·   · ██· · · · ██·   · ██· ██· ██· ·   · ████████████· 
+██· · · · · · ██  · · · · · · · ·   · · ████████· ·   ██· ██· ██· ██·   · · ████████· · 
+· · · · · · · ·   · · · · · · · ·   · · · · · · · ·   · · · · · · · ·   · · · · · · · · 
+```
+
+| Face | Mood | Moisture | Onboard NeoPixel |
+|---|---|---|---|
+| Frown | thirsty | ≤ 20% | red |
+| Flat mouth | neutral | 21–39% | amber |
+| Smile | happy | 40–84% | green |
+| Wavy mouth | soggy (waterlogged) | > 84% | blue |
+| Water drop | watered | 1 s at boot, and 2 s when moisture jumps by ≥ 15 points since the last reading | unchanged |
+
+Readings are taken every 2 s. Moisture % is
+`(1600 - raw) * 100 / (1600 - 1148)`, clamped to 0–100: 0% is the probe in
+air and 100% is the probe in water. Real soil never reads as wet as plain
+water, so freshly watered soil should land around happy rather than soggy.
+The thresholds are untuned guesses until there's data from a real pot.
+
 ## Hardware
 
 - Seeed XIAO RP2040
@@ -78,13 +109,7 @@ the row-scanning current pulses.
   to a percentage, prints `raw N  moisture N%  -> mood` over USB serial,
   draws the face and sets the onboard NeoPixel.
 
-| Display | When | NeoPixel |
-|---|---|---|
-| Water drop | 1 s at boot; 2 s when moisture jumps by ≥15 points (just watered) | — |
-| Frown | thirsty, ≤20% | red |
-| Flat mouth | neutral, 21–39% | amber |
-| Smile | happy, 40–84% | green |
-| Wavy mouth | soggy, >84% (waterlogged) | blue |
+The faces and conditions are described in [Faces](#faces).
 
 Settings at the top of `main.py`:
 
